@@ -1,6 +1,6 @@
 package com.graduation.rbackend.repository;
 
-import com.graduation.rbackend.model.Course;
+import com.graduation.rbackend.entity.Course;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

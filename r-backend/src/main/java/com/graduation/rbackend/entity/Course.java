@@ -1,4 +1,4 @@
-package com.graduation.rbackend.model;
+package com.graduation.rbackend.entity;
 
 import jakarta.persistence.*;
 

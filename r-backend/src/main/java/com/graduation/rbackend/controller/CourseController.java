@@ -1,8 +1,9 @@
 package com.graduation.rbackend.controller;
 
-import com.graduation.rbackend.model.Course;
+import com.graduation.rbackend.entity.Course;
 import com.graduation.rbackend.service.CourseService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,11 +14,12 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/courses")
+@RequiredArgsConstructor
 //@CrossOrigin()
 public class CourseController {
 
-    @Autowired
-    private CourseService courseService;
+
+    private final CourseService courseService;
 
     // 获取所有课程
     @GetMapping

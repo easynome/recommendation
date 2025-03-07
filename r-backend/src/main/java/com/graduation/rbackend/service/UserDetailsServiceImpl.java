@@ -1,45 +1,58 @@
 package com.graduation.rbackend.service;
 
+import com.graduation.rbackend.entity.BaseUser;
+import com.graduation.rbackend.repository.AdminRepository;
+import com.graduation.rbackend.repository.StudentRepository;
+import com.graduation.rbackend.repository.TeacherRepository;
+import lombok.RequiredArgsConstructor;
 
-import com.graduation.rbackend.model.User;
-import com.graduation.rbackend.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
+    private final AdminRepository adminRepository;
 
-    @Autowired
-    public UserDetailsServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 从数据库查询用户
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("用户不存在: " + username));
-
-        // 将用户角色转换为 GrantedAuthority
-        List<GrantedAuthority> authorities = Collections.singletonList(
-                new SimpleGrantedAuthority("ROLE_" + user.getRole())
-        );
-
-        // 构建 Spring Security 的 User 对象
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                authorities
-        );
+        // 依次查询角色表，直接返回完整用户信息
+        return studentRepository.findByUsername(username)
+                .map(UserDetailsImpl::new)
+                .orElseGet(() -> teacherRepository.findByUsername(username)
+                        .map(UserDetailsImpl::new)
+                        .orElseGet(() -> adminRepository.findByUsername(username)
+                                .map(UserDetailsImpl::new)
+                                .orElseThrow(() -> new UsernameNotFoundException("用户未找到: " + username))));
     }
+//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//        // 先查询 username 存在于哪个角色表
+//        BaseUser baseUser = studentRepository.findBaseUserByUsername(username)
+//                .orElseGet(() -> teacherRepository.findBaseUserByUsername(username)
+//                        .orElseGet(() -> adminRepository.findBaseUserByUsername(username)
+//                                .orElseThrow(() -> new UsernameNotFoundException("用户未找到: " + username))));
+//
+//        // 根据用户角色查询具体表
+//        return switch (baseUser.getRole()) {
+//            case STUDENT -> studentRepository.findByUsername(username)
+//                    .map(UserDetailsImpl::new)
+//                    .orElseThrow(() -> new UsernameNotFoundException("学生信息未找到: " + username));
+//
+//            case TEACHER -> teacherRepository.findByUsername(username)
+//                    .map(UserDetailsImpl::new)
+//                    .orElseThrow(() -> new UsernameNotFoundException("教师信息未找到: " + username));
+//
+//            case ADMIN -> adminRepository.findByUsername(username)
+//                    .map(UserDetailsImpl::new)
+//                    .orElseThrow(() -> new UsernameNotFoundException("管理员信息未找到: " + username));
+//        };
+//    }
+
 }

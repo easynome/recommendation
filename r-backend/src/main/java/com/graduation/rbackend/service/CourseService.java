@@ -1,7 +1,8 @@
 package com.graduation.rbackend.service;
 
-import com.graduation.rbackend.model.Course;
+import com.graduation.rbackend.entity.Course;
 import com.graduation.rbackend.repository.CourseRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,9 +12,10 @@ import java.util.List;
  * 提供课程查询、分类推荐等功能
  */
 @Service
+@RequiredArgsConstructor
 public class CourseService {
-    @Autowired
-    private CourseRepository courseRepository;
+
+    private final CourseRepository courseRepository;
 
     // 保存课程
     public Course saveCourse(Course course) {

@@ -18,8 +18,9 @@
 package com.graduation.rbackend.service;
 
 
-import com.graduation.rbackend.model.Recommendation;
+import com.graduation.rbackend.entity.Recommendation;
 import com.graduation.rbackend.repository.RecommendationRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,9 +30,10 @@ import java.util.List;
  * 实现学习推荐算法，生成个性化推荐结果
  */
 @Service
+@RequiredArgsConstructor
 public class RecommendationService {
-    @Autowired
-    private RecommendationRepository recommendationRepository;
+
+    private final RecommendationRepository recommendationRepository;
 
     //保存推荐记录
     public List<Recommendation> saveRecommendations(List<Recommendation> recommendations) {

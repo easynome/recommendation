@@ -1,4 +1,4 @@
-package com.graduation.rbackend.controller;
+package com.graduation.rbackend.test;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class TestController {
 
-    @GetMapping("/api/test")
+//    @GetMapping("/api/test")
     public String test() {
         return "Hello, Swagger!";
     }

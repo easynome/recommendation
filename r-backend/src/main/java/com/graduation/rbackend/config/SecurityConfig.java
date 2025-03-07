@@ -1,10 +1,10 @@
 package com.graduation.rbackend.config;
 
-import com.graduation.rbackend.security.JwtAuthFilter;
-import com.graduation.rbackend.service.UserDetailsServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.graduation.rbackend.security.jwt.JwtAuthFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -19,25 +19,31 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserDetailsServiceImpl userDetailsService;
-    @Autowired
-    private SecurityConfig(UserDetailsServiceImpl userDetailsService){
-        this.userDetailsService = userDetailsService;
-    };
+    private final JwtAuthFilter jwtAuthFilter;
+
+//    private SecurityConfig(UserDetailsServiceImpl userDetailsService){
+//        this.userDetailsService = userDetailsService;
+//    };
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf->csrf.disable())
-                .authorizeHttpRequests(auth->auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
+                .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authorizeHttpRequests()
+                .requestMatchers("/api/auth/**").permitAll()  // 允许所有用户访问认证 API
+                .requestMatchers("/api/admins/**").hasRole("ADMIN") // 仅管理员访问
+                .requestMatchers("/api/teachers/**").hasRole("TEACHER") // 仅教师访问
+                .requestMatchers("/api/students/**").hasRole("STUDENT") // 仅学生访问
+                .requestMatchers("/api/courses/**", "/api/recommendations/**").authenticated() // 认证用户访问
+                .anyRequest().denyAll()
+                .and()
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
@@ -46,8 +52,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public JwtAuthFilter jwtAuthFilter() {
-        return new JwtAuthFilter();
-    }
 }

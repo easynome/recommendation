@@ -1,7 +1,8 @@
 package com.graduation.rbackend.controller;
 
-import com.graduation.rbackend.model.Recommendation;
+import com.graduation.rbackend.entity.Recommendation;
 import com.graduation.rbackend.service.RecommendationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,10 +14,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/recommendations")
+@RequiredArgsConstructor
 public class RecommendationController {
 
-    @Autowired
-    private RecommendationService recommendationService;
+
+    private final RecommendationService recommendationService;
 
     // 获取所有推荐
     @GetMapping
