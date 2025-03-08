@@ -105,7 +105,7 @@ class UserDetailsServiceImplTest {
                 userDetailsService.loadUserByUsername("unknown")
         );
 
-        assertEquals("User not foundunknown", exception.getMessage());
+        assertEquals("用户未找到: unknown", exception.getMessage());
 
         verify(studentRepository, times(1)).findByUsername("unknown");
         verify(teacherRepository, times(1)).findByUsername("unknown");

@@ -31,17 +31,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeHttpRequests()
-                .requestMatchers("/api/auth/**").permitAll()  // 允许所有用户访问认证 API
-                .requestMatchers("/api/admins/**").hasRole("ADMIN") // 仅管理员访问
-                .requestMatchers("/api/teachers/**").hasRole("TEACHER") // 仅教师访问
-                .requestMatchers("/api/students/**").hasRole("STUDENT") // 仅学生访问
-                .requestMatchers("/api/courses/**", "/api/recommendations/**").authenticated() // 认证用户访问
+                .csrf(csrf->csrf.disable())
+                .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth->auth
+                    .requestMatchers("/api/auth/**").permitAll()  // 允许所有用户访问认证 API
+                    .requestMatchers("/api/admins/**").hasRole("ADMIN") // 仅管理员访问
+                    .requestMatchers("/api/teachers/**").hasRole("TEACHER") // 仅教师访问
+                    .requestMatchers("/api/students/**").hasRole("STUDENT") // 仅学生访问
+                    .requestMatchers("/api/courses/**", "/api/recommendations/**").authenticated() // 认证用户访问
                 .anyRequest().denyAll()
-                .and()
+                )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

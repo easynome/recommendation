@@ -3,37 +3,49 @@ package com.graduation.rbackend.security.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Component
 @RequiredArgsConstructor
-public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
+public class JwtAuthFilter extends OncePerRequestFilter {
 
-//    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
     private final JwtTokenProvider jwtTokenProvider;
 
 
-
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    protected void doFilterInternal(@NotNull HttpServletRequest request,
+                                    @NotNull HttpServletResponse response,
+                                    @NotNull FilterChain chain)
             throws ServletException, IOException {
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String token=resolveToken(httpRequest);
+        try {
+            String token= resolveToken(request);
 
-        if(StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
-            UserDetails userDetails = jwtTokenProvider.getUserDetails(token);
-            SecurityContextHolder.getContext().setAuthentication(jwtTokenProvider.getAuthentication(token));
+            if (StringUtils.hasText(token) &&
+                    jwtTokenProvider.validateToken(token)) {
+                Authentication authentication =
+                        jwtTokenProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+            chain.doFilter(request, response);
+        }catch (Exception e){
+            logger.error("JwtAuthFilter error: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\": \"Invalid JWT token\"}");
         }
-        chain.doFilter(request, response);
     }
 
 
@@ -44,12 +56,5 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
         }
         return null;
     }
-//    private String getJwtFromRequest(HttpServletRequest request) {
-//        String bearerToken = request.getHeader("Authorization");
-//        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-//            return bearerToken.substring(7);
-//        }
-//        return null;
-//    }
 
 }
