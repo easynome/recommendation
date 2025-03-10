@@ -44,4 +44,7 @@ public class TeacherService {
     }
 
 
+    public Optional<Teacher> getTeacherByUsername(String username) {
+        return teacherRepository.findByUsername(username);
+    }
 }

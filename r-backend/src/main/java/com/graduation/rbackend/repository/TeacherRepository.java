@@ -13,6 +13,7 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
     // 根据部门查询教师
     List<Teacher> findByDepartment(String department);
 
+    // 根据用户名查询教师
     Optional<Teacher> findByUsername(String username);
 //    @Query("SELECT new com.graduation.rbackend.entity.BaseUser(t.id, t.username, t.role) FROM Teacher t WHERE t.username = :username")
 //    Optional<BaseUser> findBaseUserByUsername(@Param("username") String username);

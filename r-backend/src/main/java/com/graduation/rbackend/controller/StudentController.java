@@ -3,7 +3,6 @@ package com.graduation.rbackend.controller;
 import com.graduation.rbackend.entity.Student;
 import com.graduation.rbackend.service.StudentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,9 +23,16 @@ public class StudentController {
         return studentService.getAllStudents();
     }
     // 根据id获取学生(防止空指针异常）
-    @GetMapping("/{id}")
+    @GetMapping("id/{id}")
     public ResponseEntity<Student> getStudentById(@PathVariable Long id) {
         return studentService.getStudentById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(()->ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("username/{username}")
+    public ResponseEntity<Student> getStudentByUsername(@PathVariable String username) {
+        return studentService.getStudentByUsername(username)
                 .map(ResponseEntity::ok)
                 .orElseGet(()->ResponseEntity.notFound().build());
     }

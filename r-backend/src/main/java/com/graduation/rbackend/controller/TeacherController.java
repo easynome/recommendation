@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/teacher")
+@RequestMapping("/api/teachers")
 @RequiredArgsConstructor
 public class TeacherController {
 
@@ -23,7 +23,14 @@ public class TeacherController {
         return teacherService.getAllTeachers();
     }
 
-    @GetMapping("/{id}")
+
+    @GetMapping("username/{username}")
+    public ResponseEntity<Teacher> getTeacherByUsername(@PathVariable String username) {
+        return teacherService.getTeacherByUsername(username)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    @GetMapping("id/{id}")
     public ResponseEntity<Teacher> getTeacherById(@PathVariable Long id) {
         return teacherService.getTeacherById(id)
                 .map(ResponseEntity::ok)

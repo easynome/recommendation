@@ -62,5 +62,8 @@ public class StudentService {
     }
 
 
-
+    // 根据用户名查询学生信息
+    public Optional<Student> getStudentByUsername(String username) {
+        return studentRepository.findByUsername(username);
+    }
 }

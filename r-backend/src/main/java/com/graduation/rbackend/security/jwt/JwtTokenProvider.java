@@ -1,9 +1,7 @@
 package com.graduation.rbackend.security.jwt;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.*;
 
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -42,7 +40,7 @@ public class JwtTokenProvider {
         long EXPIRATION_TIME = 86400000;
         String token= Jwts.builder()
                 .setSubject(username)
-                .claim("role", role)
+                .claim("role","ROLE"+ role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(secretKey)
@@ -55,12 +53,18 @@ public class JwtTokenProvider {
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+            log.info("✅ Token 验证成功");
             return true;
+        } catch (ExpiredJwtException e) {
+            log.error("❌ Token 已过期: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            log.error("❌ Token 格式错误: {}", e.getMessage());
+        } catch (SignatureException e) {
+            log.error("❌ Token 签名无效: {}", e.getMessage());
         } catch (Exception e) {
-            log.error("JWT验证失败: {}", e.getMessage());
-            //SignatureException | MalformedJwtException | ExpiredJwtException | UnsupportedJwtException | IllegalArgumentException e
-            return false;
+            log.error("❌ Token 验证失败: {}", e.getMessage());
         }
+        return false;
     }
     public Claims getClaims(String token) {
         return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
@@ -74,7 +78,7 @@ public class JwtTokenProvider {
         UserDetails userDetails = User.builder()
                 .username(username)
                 .password("")
-                .roles(role)
+                .roles(role.replace("ROLE",""))
                 .build();
 //        List<SimpleGrantedAuthority> authorities= Arrays.stream(role.split(","))
 //                .map(SimpleGrantedAuthority::new)

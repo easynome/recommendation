@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
     private final AdminService adminService;
 
+
+    // 根据用户名获取管理员信息
     @GetMapping("/{username}")
     public ResponseEntity<Admin> getAdminByUsername(@PathVariable String username) {
         return adminService.getAdminByUsername(username)
@@ -19,6 +21,7 @@ public class AdminController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // 添加管理员
     @PostMapping
     public ResponseEntity<Admin> addAdmin(@RequestBody Admin admin) {
         Admin savedAdmin = adminService.saveAdmin(admin);
