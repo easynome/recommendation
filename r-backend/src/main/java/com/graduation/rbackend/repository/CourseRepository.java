@@ -2,6 +2,7 @@ package com.graduation.rbackend.repository;
 
 import com.graduation.rbackend.entity.Course;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,6 +10,7 @@ import java.util.Optional;
 /**
  * 存储课程数据、查询课程等
  */
+@Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
 
     // 根据课程名查找

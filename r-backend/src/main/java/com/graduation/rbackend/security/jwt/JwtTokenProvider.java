@@ -40,7 +40,7 @@ public class JwtTokenProvider {
         long EXPIRATION_TIME = 86400000;
         String token= Jwts.builder()
                 .setSubject(username)
-                .claim("role","ROLE"+ role)
+                .claim("role","ROLE_"+role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(secretKey)
@@ -75,16 +75,19 @@ public class JwtTokenProvider {
         String username = claims.getSubject();
         String role = claims.get("role", String.class);
 
+        log.info("🟠 Token 解析出的角色 (原始): {}", role);
+
         UserDetails userDetails = User.builder()
                 .username(username)
                 .password("")
-                .roles(role.replace("ROLE",""))
+                .roles(role.replace("ROLE_", ""))
                 .build();
 //        List<SimpleGrantedAuthority> authorities= Arrays.stream(role.split(","))
 //                .map(SimpleGrantedAuthority::new)
 //                .collect(Collectors.toList());
 //        UserDetails userDetails = new org.springframework.security.core.userdetails.User(username, "",
 //                authorities);
+        log.info("✅ Token 解析出的角色: {}", role);
         return new UsernamePasswordAuthenticationToken(userDetails, token, userDetails.getAuthorities());
     }
 }

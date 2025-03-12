@@ -48,23 +48,37 @@ public class AuthController {
         if (studentOpt.isPresent()) {
             Student student = studentOpt.get();
             if (passwordEncoder.matches(password, student.getPassword())) {
+                log.info("✅ 密码匹配成功");
                 String token = jwtTokenProvider.generateToken(student.getUsername(),"STUDENT");
                 return ResponseEntity.ok(Map.of("token", token));
+            }
+            else {
+                log.warn("❗密码匹配失败");
             }
         }
         if (teacherOpt.isPresent()) {
             Teacher teacher = teacherOpt.get();
             if (passwordEncoder.matches(password, teacher.getPassword())) {
+                log.info("✅ 密码匹配成功");
                 String token = jwtTokenProvider.generateToken(teacher.getUsername(),"TEACHER");
                 return ResponseEntity.ok(Map.of("token", token));
+            }
+            else {
+                log.warn("❗密码匹配失败");
             }
         }
         if (adminOpt.isPresent()) {
             Admin admin = adminOpt.get();
             if (passwordEncoder.matches(password, admin.getPassword())) {
+                log.info("✅ 密码匹配成功");
                 String token = jwtTokenProvider.generateToken(admin.getUsername(),"ADMIN");
                 return ResponseEntity.ok(Map.of("token", token));
+            } else {
+                log.warn("❗密码匹配失败");
             }
+        }
+        else {
+            log.warn("❗未找到用户");
         }
         return ResponseEntity.ok("登录失败");
     }

@@ -2,10 +2,13 @@ package com.graduation.rbackend.controller;
 
 import com.graduation.rbackend.entity.Admin;
 import com.graduation.rbackend.service.AdminService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/admins")
 @RequiredArgsConstructor
@@ -21,9 +24,14 @@ public class AdminController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+//    //注册管理员
+//    @PostMapping("/register")
+//    public ResponseEntity<?> register() {
+
     // 添加管理员
     @PostMapping
     public ResponseEntity<Admin> addAdmin(@RequestBody Admin admin) {
+        log.info("接收到的JSON数据：{}",admin);
         Admin savedAdmin = adminService.saveAdmin(admin);
         return ResponseEntity.ok(savedAdmin);
     }

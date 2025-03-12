@@ -5,7 +5,7 @@ import com.graduation.rbackend.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
+import com.graduation.rbackend.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,26 +19,27 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
 
-    // 保存课程
-    public Course saveCourse(Course course) {
-        return courseRepository.save(course);
-    }
     // 获取所有课程
     public List<Course> getAllCourses() {
         return courseRepository.findAll();
     }
     // 根据id获取课程
     public Course getCourseById(Long id) {
-        return courseRepository.findById(id).get();
+        return courseRepository.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("未找到 ID 为 " + id + " 的课程"));
     }
 
     //添加课程
     public Course addCourse(Course course) {
+        log.info("🟠 接收到的 Course 数据: {}", course);
+        if (course.getCourseName() == null) {
+            log.warn("❗ courseName 为空，JSON 数据未正确解析");
+        }
         return courseRepository.save(course);
     }
 
     //更新课程
-    public Course updateCourse(Long id,Course courseDetails) {
+    public Course updateCourse(Long id, Course courseDetails) {
         log.info("🟠 接收到的 Course 数据: {}", courseDetails);
         if (courseDetails.getCourseName() == null) {
             log.warn("❗ courseName 为空，可能的原因：JSON 键名拼写错误 / Lombok 未生效 / 数据未成功解析");

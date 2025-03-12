@@ -6,8 +6,10 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -24,7 +26,6 @@ public class CourseController {
     private final CourseService courseService;
 
     // 获取所有课程
-
     @GetMapping
     public ResponseEntity<List<Course>> getAllCourses() {
         return ResponseEntity.ok(courseService.getAllCourses());
@@ -35,24 +36,33 @@ public class CourseController {
 //    }
 
     // 根据课程id获取课程信息
-    @GetMapping("/{id}")
+    @GetMapping(    "/{id}")
     public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
         return ResponseEntity.ok(courseService.getCourseById(id));
     }
     // 添加课程
-    @PostMapping
+    @PostMapping("/add")
     public ResponseEntity<Course> addCourse(@RequestBody Course course) {
-        return ResponseEntity.ok(courseService.addCourse(course));
+        log.info("接收到的 JSON 数据: {}", course);
+        if (course.getCourseName() == null) {
+            log.warn("❗ courseName 为空，JSON 数据未正确解析");
+        }
+
+        Course saveCourse=courseService.addCourse(course);
+        return ResponseEntity.ok(saveCourse);
     }
 
     //更新课程信息
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<Course> updateCourse(@PathVariable Long id,@RequestBody Course courseDetails) {
         log.info("接收到的 JSON 数据: {}", courseDetails);
+        if (courseDetails.getCourseName() == null) {
+            log.warn("❗ courseName 为空，JSON 数据未正确解析");
+        }
         return ResponseEntity.ok(courseService.updateCourse(id,courseDetails));
     }
     // 删除课程
-    @DeleteMapping("/{id}")
+    @DeleteMapping("delete/{id}")
     public ResponseEntity<?> deleteCourseById(@PathVariable Long id) {
         courseService.deleteCourseById(id);
         return ResponseEntity.ok().body("课程已删除");

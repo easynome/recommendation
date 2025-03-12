@@ -3,15 +3,19 @@ package com.graduation.rbackend.controller;
 import com.graduation.rbackend.entity.Recommendation;
 import com.graduation.rbackend.service.RecommendationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
  * 处理学习推荐相关的请求（如获取个性化推荐）
  */
 
+@Slf4j
 @RestController
 @RequestMapping("/api/recommendations")
 @RequiredArgsConstructor
@@ -45,8 +49,15 @@ public class RecommendationController {
     }
 
     // 添加推荐
-    @PostMapping
-    public List<Recommendation> addRecommendations(@RequestBody List<Recommendation> recommendations) {
-        return recommendationService.saveRecommendations(recommendations);
+    @PostMapping("/add")
+    public ResponseEntity<Recommendation> addRecommendation(@RequestBody Recommendation recommendation) {
+        log.info("接收到的 JSON 数据: {}", recommendation);
+        if(recommendation.getStudent() == null || recommendation.getCourse() == null){
+            log.warn("❗ studentId 或 courseId 为空，JSON 数据未正确解析");
+            return ResponseEntity.badRequest().build();
+        }
+        recommendation.setRecommendationDate(new Timestamp(System.currentTimeMillis()));
+        Recommendation saveRecommendation = recommendationService.addRecommendation(recommendation);
+        return ResponseEntity.ok(saveRecommendation);
     }
 }

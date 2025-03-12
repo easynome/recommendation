@@ -36,8 +36,8 @@ public class RecommendationService {
     private final RecommendationRepository recommendationRepository;
 
     //保存推荐记录
-    public List<Recommendation> saveRecommendations(List<Recommendation> recommendations) {
-        return recommendationRepository.saveAll(recommendations);
+    public Recommendation addRecommendation(Recommendation recommendation) {
+        return recommendationRepository.save(recommendation);
     }
     //获取所有推荐记录
     public List<Recommendation> getAllRecommendations() {
