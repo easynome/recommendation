@@ -4,6 +4,7 @@ import com.graduation.rbackend.security.jwt.CachingRequestWrapper;
 import com.graduation.rbackend.security.jwt.CachingRequestWrapperFilter;
 import com.graduation.rbackend.security.jwt.JwtAuthFilter;
 import com.graduation.rbackend.security.jwt.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,18 +27,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
-//    @Bean
-//    public CachingRequestWrapperFilter cachingRequestWrapperFilter() {
-//        return new CachingRequestWrapperFilter();
-//    }
-//    @Bean
-//    public JwtAuthFilter jwtAuthFilter() {
-//        return new JwtAuthFilter(jwtTokenProvider);
-//    }
 
-//    private SecurityConfig(UserDetailsServiceImpl userDetailsService){
-//        this.userDetailsService = userDetailsService;
-//    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -54,6 +44,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/students/**").hasRole("STUDENT") // 仅学生访问
                         .requestMatchers("/api/courses/**", "/api/recommendations/**").authenticated() // 认证用户访问
                         .anyRequest().denyAll()
+                )
+                .exceptionHandling(exception->exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);// 设置状态码为401
+                            response.getWriter().write("{\"error\": \"认证失败，请检查用户名和密码\"}");
+                        })
                 )
                 .addFilterBefore(cachingRequestWrapperFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

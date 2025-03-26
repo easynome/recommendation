@@ -1,5 +1,6 @@
 
 spring:
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -12,12 +13,23 @@ spring:
       swagger-ui.path: /swagger-ui.html
 
 
+
   main:
     web-application-type: servlet  # 确保项目是 Web 应用（如果是 REST API）
+    allow-bean-definition-overriding: true
+  jackson:
+    serialization:
+      indent-output: true
 server:
     port: 8081  # 修改为可用端口
+    servlet:
+      encoding:
+        charset: utf-8
+        enabled: true
+        force: true
 custom:
   message: "Hello, Spring Boot!"
+
 
 logging:
   level:

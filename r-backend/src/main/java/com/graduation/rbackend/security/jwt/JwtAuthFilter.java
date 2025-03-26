@@ -1,5 +1,8 @@
 package com.graduation.rbackend.security.jwt;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,17 +10,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
-
+//拦截和处理请求
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -30,54 +30,69 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     @NotNull HttpServletResponse response,
                                     @NotNull FilterChain chain)
             throws ServletException, IOException {
-//
-//        // 检查 Content-Type 是否为 application/json
-//        String contentType = request.getContentType();
-//        if (contentType == null || !contentType.equalsIgnoreCase("application/json")) {
-//            log.warn("❗ Content-Type 不为 application/json，可能导致数据解析失败");
-//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            response.getWriter().write("{\"error\": \"Invalid Content-Type\"}");
-//            return;
-//        }
 
-//         直接使用传入的 requestWrapper，避免重复创建
-//        CachingRequestWrapper requestWrapper = (CachingRequestWrapper) request;
-//
-//        // 🔎 打印原始 JSON 数据 (仅在 debug 模式下)
-//        byte[] bodyBytes = requestWrapper.getInputStream().readAllBytes();
-//        if (bodyBytes.length > 0) {
-//            String body = new String(bodyBytes, StandardCharsets.UTF_8).trim();
-//            log.info("🟠 JwtAuthFilter 中的原始 JSON 数据: {}", body);
-//        } else {
-//            log.warn("❗ JwtAuthFilter 未接收到 JSON 数据，可能请求体为空或已被其他过滤器消耗");
-//        }
 
-        try {
-            String token = resolveToken(request);
+        log.info("🟠 请求路径: {}", request.getRequestURI());
+        log.info("🟠 请求头 Authorization: {}", request.getHeader("Authorization"));
+        String requestPath = request.getRequestURI();
 
-            log.info("🟠 接收到的原始请求路径: {}", request.getRequestURI());
-
-            if (StringUtils.hasText(token) &&
-                    jwtTokenProvider.validateToken(token)) {
-                log.info("✅ 解析到 Token: {}", token);
-                Authentication authentication =
-                        jwtTokenProvider.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("🟠 解析出的角色: {}", authentication.getAuthorities());
-            }
+        // ➤ 检查是否是 `/api/auth/**` 请求，直接放行
+        if (requestPath.startsWith("/api/auth/")) {
+            log.info("🟢 放行 `/api/auth/` 请求: {}", requestPath);
             chain.doFilter(request, response);
-        } catch (Exception e) {
-            log.error("JwtAuthFilter error: {}", e.getMessage());
+            return;  // ➤ 提前结束，避免继续执行 Token 检查
+        }
+
+        String token = resolveToken(request);
+
+        log.info("🟠 接收到的原始请求路径: {}", request.getRequestURI());
+
+        // ➤ 判断 Token 是否存在
+        if (!StringUtils.hasText(token)) {
+            log.warn("❗ 未提供 Token，未授权请求");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\": \"Token is missing\"}");
+            return;
+        }
+
+        // ➤ Token 验证逻辑
+        if (!jwtTokenProvider.validateToken(token)) {
+            log.warn("❗ Token 无效，未授权请求");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("{\"error\": \"Invalid JWT token\"}");
+            return;
         }
-    }
 
+        // ➤ 设置 Authentication
+        log.info("✅ 解析到 Token: {}", token);
+        Authentication authentication = jwtTokenProvider.getAuthentication(token);
+
+        if (authentication != null) {
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.info("🟠 解析出的角色: {}", authentication.getAuthorities());
+        } else {
+            log.warn("❗ 未找到 Authentication 对象，未设置 SecurityContext");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\": \"Invalid JWT token\"}");
+            SecurityContextHolder.getContext().setAuthentication(null);
+            return;
+        }
+
+        chain.doFilter(request, response);
+    }
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+        log.info("🟠 resolveToken() 接收到的 Authorization 请求头: {}", bearerToken);
+        if (StringUtils.hasText(bearerToken)) {
+            if (bearerToken.startsWith("Bearer ")) {
+                log.info("✅ Token 解析成功 (带有 Bearer 前缀)");
+                return bearerToken.substring(7);
+            } else {
+                log.info("✅ Token 解析成功 (无 Bearer 前缀)");
+                return bearerToken;
+            }
         }
+        log.warn("❗ Token 未找到或为空");
         return null;
     }
 }

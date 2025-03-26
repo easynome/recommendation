@@ -2,6 +2,7 @@ package com.graduation.rbackend.entity;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,8 +13,9 @@ import java.util.List;
 /**
  * 推荐实体类，保存推荐算法的输出结果
  */
-//@Getter
-//@Setter
+@AllArgsConstructor
+@Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @Table(name = "recommendations") // 数据库表名为 recommendations
@@ -46,71 +48,12 @@ public class Recommendation {
     @Column(name = "feedback_time")
     private Timestamp feedbackTime; // 反馈时间
 
-    // Getters and Setters
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
+    public Recommendation(Long id, Student student, Course course, Double score, String algorithmType) {
         this.id = id;
-    }
-
-    public Student getStudent() {
-        return student;
-    }
-
-    public void setStudent(Student student) {
         this.student = student;
-    }
-
-    public Course getCourse() {
-        return course;
-    }
-
-    public void setCourse(Course course) {
         this.course = course;
-    }
-
-    public Double getScore() {
-        return score;
-    }
-
-    public void setScore(Double score) {
         this.score = score;
-    }
-
-    public String getAlgorithmType() {
-        return algorithmType;
-    }
-
-    public void setAlgorithmType(String algorithmType) {
         this.algorithmType = algorithmType;
     }
-
-    public Timestamp getRecommendationDate() {
-        return recommendationDate;
-    }
-
-    public void setRecommendationDate(Timestamp recommendationDate) {
-        this.recommendationDate = recommendationDate;
-    }
-
-    public String getFeedback() {
-        return feedback;
-    }
-
-    public void setFeedback(String feedback) {
-        this.feedback = feedback;
-    }
-
-    public Timestamp getFeedbackTime() {
-        return feedbackTime;
-    }
-
-    public void setFeedbackTime(Timestamp feedbackTime) {
-        this.feedbackTime = feedbackTime;
-    }
-
 
 }

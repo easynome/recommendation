@@ -2,7 +2,7 @@ package com.graduation.rbackend.controller;
 
 import com.graduation.rbackend.entity.Course;
 import com.graduation.rbackend.service.CourseService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -36,16 +36,21 @@ public class CourseController {
 //    }
 
     // 根据课程id获取课程信息
-    @GetMapping(    "/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
-        return ResponseEntity.ok(courseService.getCourseById(id));
+        Course course = courseService.getCourseById(id);
+        if(course==null){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(course);
     }
     // 添加课程
     @PostMapping("/add")
-    public ResponseEntity<Course> addCourse(@RequestBody Course course) {
+        public ResponseEntity<?> addCourse(@Valid @RequestBody Course course) {
         log.info("接收到的 JSON 数据: {}", course);
-        if (course.getCourseName() == null) {
+        if (course.getCourseName() == null||course.getCourseName().trim().isEmpty()) {
             log.warn("❗ courseName 为空，JSON 数据未正确解析");
+            return ResponseEntity.badRequest().body("课程名称不能为空");
         }
 
         Course saveCourse=courseService.addCourse(course);

@@ -2,6 +2,7 @@ package com.graduation.rbackend.controller;
 
 import com.graduation.rbackend.entity.Admin;
 import com.graduation.rbackend.service.AdminService;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ public class AdminController {
     @PostMapping
     public ResponseEntity<Admin> addAdmin(@RequestBody Admin admin) {
         log.info("接收到的JSON数据：{}",admin);
-        Admin savedAdmin = adminService.saveAdmin(admin);
+        Admin savedAdmin = adminService.addAdmin(admin);
         return ResponseEntity.ok(savedAdmin);
     }
 }
